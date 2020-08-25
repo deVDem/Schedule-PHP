@@ -1,0 +1,14 @@
+{
+  "mySQL": {
+    "host": "localhost",
+    "port": 3306,
+    "account": [
+      {
+        "user": "user",
+        "password": "password",
+        "database": "schedule",
+        "COMMENT": "Hello GitHub user! This is a test file for GitHub, because i'm not publish a real credinals files on GitHub. Good luck :)"
+      }
+    ]
+  }
+}
