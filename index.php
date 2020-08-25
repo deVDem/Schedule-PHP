@@ -2,12 +2,13 @@
 
 $debug = preg_match("/debug/", $_SERVER['SCRIPT_FILENAME']);
 require "regexs.php";
+require "mail/core.php";
 
 $action = getRes('action');
 $response = array();
 $credinals = json_decode(file_get_contents("credinals.json"), true);
-$connect = mysqli_connect($credinals['mySQL']['host'], $credinals['mySQL']['account'][0]['user'], $credinals['mySQL']['account'][0]['password'],
-    $debug ? $credinals['mySQL']['account'][0]['database'] . "debug" : $credinals['mySQL']['account'][0]['database'],
+$connect = mysqli_connect($credinals['mySQL']['host'], $credinals['mySQL']['account']['user'], $credinals['mySQL']['account']['password'],
+    $debug ? $credinals['mySQL']['account']['database'] . "debug" : $credinals['mySQL']['account']['database'],
     $credinals['mySQL']['port']);
 if (!$connect) {
     $response['error']['text'] = "Error on database server";
