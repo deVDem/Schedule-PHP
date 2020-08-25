@@ -4,6 +4,7 @@ $debug = preg_match("/debug/", $_SERVER['SCRIPT_FILENAME']);
 require "regexs.php";
 require "mail/core.php";
 
+
 $action = getRes('action');
 $response = array();
 $credinals = json_decode(file_get_contents("credinals.json"), true);
@@ -58,6 +59,9 @@ if (!$connect) {
                         registerUser($connect, $login, $email, $password_hash, $names, $spam, $token);
                         $user = getUser($login, $connect);
                         $response['response']['user_data'] = $user;
+                        initMail();
+                        setAddress($user['email']);
+                        sendMail(0);
                     } else {
                         $response['error']['text'] = "Wrong user data";
                         $response['error']['code'] = 0x06;
