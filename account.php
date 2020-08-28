@@ -9,7 +9,15 @@ function getUser($data, $connect)
     }
     return $user;
 }
-
+function generateKeyForUser($connect, $userId) {
+    $newKey = generateToken(16);
+    $keys=getAllKeys($connect);
+    foreach ($keys as $key) {
+        if($newKey==$key) return generateKeyForUser($connect, $userId);
+    }
+    $connect->query("INSERT INTO `mail_activation`(`keyMail`, `userId`) VALUES (\"$newKey\", $userId)");
+    return $newKey;
+}
 
 function checkToken($connect, $token) {
     $return=false;
@@ -37,4 +45,15 @@ function getAllTokens($connect) {
         $i++;
     }
     return $tokens;
+}
+
+function getAllKeys($connect) {
+    $keys = null;
+    $i=0;
+    $query = $connect->query("SELECT `keyMail` from `mail_activation`");
+    while ($row=$query->fetch_assoc()) {
+        $keys[$i] = $row['keyMail'];
+        $i++;
+    }
+    return $keys;
 }

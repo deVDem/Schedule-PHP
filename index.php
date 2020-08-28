@@ -7,7 +7,7 @@ require "mail/core.php";
 
 $action = getRes('action');
 $response = array(); // answer from server
-$credinals = json_decode(file_get_contents("credinals.json"), true);
+$credinals = json_decode(file_get_contents("D:\Sites\credinals.json"), true);
 $connect = mysqli_connect(
     $credinals['mySQL']['host'],
     $credinals['mySQL']['account']['user'],
@@ -61,7 +61,7 @@ if (!$connect) {
                         $response['response']['user_data'] = $user;
                         initMail();
                         setAddress($user['email']);
-                        sendMail(0);
+                        sendMail(0, array("https://api.devdem.ru/apps/schedule/".getDebugStr()."activation_mail?key=".generateKeyForUser($connect, $user['id'])));
                     } else {
                         goError("Wrong user data", 0x06);
                     }
@@ -172,6 +172,7 @@ if (!$connect) {
     }
     $connect->close();
 }
+
 echo json_encode($response);
 
 function getRes($name)
@@ -203,4 +204,13 @@ function goError($message, $code)
     global $response;
     $response['error']['text'] = $message;
     $response['error']['code'] = $code;
+}
+function getDebug() {
+    global $debug;
+    return $debug;
+}
+
+function getDebugStr() {
+    global $debug;
+    return $debug ? "debug/" : "";
 }

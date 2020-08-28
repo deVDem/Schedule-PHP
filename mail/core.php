@@ -35,14 +35,15 @@ function setAddress($address)
     }
 }
 
-function sendMail($id)
+function sendMail($id, $args)
 {
     try {
         global $mail;
         if (file_exists(dirname(__FILE__) . "/templates/$id/subject.txt") &&
-            file_exists(dirname(__FILE__) . "/templates/$id/template.html")) {
+            file_exists(dirname(__FILE__) . "/templates/$id/template.php")) {
             $subject = file_get_contents("templates/$id/subject.txt", FILE_USE_INCLUDE_PATH);
-            $msgHTML = file_get_contents("templates/$id/template.html", FILE_USE_INCLUDE_PATH);
+            $debugstr = getDebug() ? "/debug" : "";
+            $msgHTML = file_get_contents("https://api.devdem.ru/apps/schedule".$debugstr."/mail/templates/$id/template.php?s=".json_encode($args));
             $mail->Subject = $subject;
             $mail->msgHTML($msgHTML);
             return $mail->send();
@@ -65,10 +66,11 @@ function getsubject($id)
     }
 }
 
-function getMSGHTML($id)
+function getMSGHTML($id, $args)
 {
-    if (file_exists(dirname(__FILE__) . "/templates/$id/template.html")) {
-        $msgHTML = file_get_contents("templates/$id/template.html", FILE_USE_INCLUDE_PATH);
+    if (file_exists(dirname(__FILE__) . "/templates/$id/template.php")) {
+        $debugstr = getDebug() ? "/debug" : "";
+        $msgHTML = file_get_contents("https://api.devdem.ru/apps/schedule".$debugstr."/mail/templates/$id/template.php?s=".json_encode($args));
         echo $msgHTML;
     } else {
         echo new Exception("Server error: No template found");
