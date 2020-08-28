@@ -184,13 +184,18 @@ function getRes($name)
 
 function generateToken($length = 64)
 {
+    global $connect;
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
-    $randomString = '';
+    $newToken = '';
     for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
+        $newToken .= $characters[rand(0, $charactersLength - 1)];
     }
-    return $randomString;
+    $tokens=getAllTokens($connect);
+    foreach ($tokens as $token) {
+        if($newToken==$token) return generateToken();
+    }
+    return $newToken;
 }
 
 function goError($message, $code)

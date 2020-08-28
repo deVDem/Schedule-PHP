@@ -27,3 +27,14 @@ function registerUser($connect, $login, $email, $passwordHash, $names, $spam, $t
 function changeGroup($connect, $id, $groupId) {
     return $connect->query("UPDATE `users` SET `groupId`=\"$groupId\" WHERE `id`=$id");
 }
+
+function getAllTokens($connect) {
+    $tokens = null;
+    $i=0;
+    $query = $connect->query("SELECT `token` FROM `users`");
+    while ($row = $query->fetch_assoc()) {
+        $tokens[$i] = $row['token'];
+        $i++;
+    }
+    return $tokens;
+}
