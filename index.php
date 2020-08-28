@@ -96,35 +96,39 @@ if (!$connect) {
             if ($user == null) {
                 goError("Invalid token", 0x0A);
             } else {
-                if ($user['groupId'] == -1 || $groupId == -1) {
-                    $groupList = getListOfGroups($connect, null, null, null, null);
-                    if ($groupId != -1) {
-                        $error = true;
-                        foreach ($groupList as $group) {
-                            if ($group['id'] == $groupId) $error = false;
-                        }
-                        if ($error) {
-                            goError("This group is not exist", 0x0C);
+                if ($groupId == "" || $groupId == null) {
+                    goError("Type a group id", 0x0F);
+                } else {
+                    if ($user['groupId'] == -1 || $groupId == -1) {
+                        $groupList = getListOfGroups($connect, null, null, null, null);
+                        if ($groupId != -1) {
+                            $error = true;
+                            foreach ($groupList as $group) {
+                                if ($group['id'] == $groupId) $error = false;
+                            }
+                            if ($error) {
+                                goError("This group is not exist", 0x0C);
+                            } else {
+                                if (changeGroup($connect, $user['id'], $groupId) == true)
+                                    $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                                else {
+                                    goError("Error on database server", 0x0D);
+                                }
+                            }
                         } else {
-                            if (changeGroup($connect, $user['id'], $groupId) == true)
-                                $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
-                            else {
-                                goError("Error on database server", 0x0D);
+                            if ($user['groupId'] == -1 && $groupId == -1) {
+                                goError("You have already left the group", 0x0E);
+                            } else {
+                                if (changeGroup($connect, $user['id'], $groupId) == true)
+                                    $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                                else {
+                                    goError("Error on database server", 0x0D);
+                                }
                             }
                         }
                     } else {
-                        if ($user['groupId'] == -1 && $groupId == -1) {
-                            goError("You have already left the group", 0x0E);
-                        } else {
-                            if (changeGroup($connect, $user['id'], $groupId) == true)
-                                $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
-                            else {
-                                goError("Error on database server", 0x0D);
-                            }
-                        }
+                        goError("You already in group", 0x0B);
                     }
-                } else {
-                    goError("You already in group", 0x0B);
                 }
             }
             break;
@@ -164,7 +168,8 @@ function generateToken($length = 64)
     return $randomString;
 }
 
-function goError($message, $code) {
+function goError($message, $code)
+{
     global $response;
     $response['error']['text'] = $message;
     $response['error']['code'] = $code;
