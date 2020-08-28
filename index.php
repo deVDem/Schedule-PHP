@@ -133,6 +133,31 @@ if (!$connect) {
             }
             break;
         }
+        case "getLessons": {
+            $groupId=getRes('groupId');
+            $token=getRes('token');
+            $lessons = getLessons($connect, $groupId);
+            $user = getUser($token, $connect);
+            if($user==null) {
+                goError("Invalid token", 0x11);
+                break;
+            }
+            if($groupId=="" || $groupId==null) {
+                goError("Type group id", 0x13);
+                break;
+            }
+            if($groupId!=$user['groupId']) { // TODO: система полномочий для модерации других групп
+                goError("No permissions for this action", 0x12);
+                break;
+            }
+            if($lessons==null) {
+                goError("No lessons available for this group", 0x10);
+                break;
+            } else {
+                $response['response']['lessons']=$lessons;
+            }
+            break;
+        }
         case null:
         case "":
         {

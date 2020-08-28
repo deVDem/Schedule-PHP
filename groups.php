@@ -11,3 +11,15 @@ function getListOfGroups($connect, $name, $city, $building, $confirmed)
     }
     return $groups;
 }
+
+function getLessons($connect, $groupId) {
+    $lessons = null;
+    $i=0;
+    $query = $connect->query("SELECT * FROM `lessons` WHERE `groupOwner`=\"$groupId\"");
+    while ($row = $query->fetch_assoc()) {
+        $lessons[$i]=$row;
+        $lessons[$i]['ord']=$i;
+        $i++;
+    }
+    return $lessons;
+}
