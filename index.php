@@ -6,14 +6,16 @@ require "mail/core.php";
 
 
 $action = getRes('action');
-$response = array();
+$response = array(); // answer from server
 $credinals = json_decode(file_get_contents("credinals.json"), true);
-$connect = mysqli_connect($credinals['mySQL']['host'], $credinals['mySQL']['account']['user'], $credinals['mySQL']['account']['password'],
+$connect = mysqli_connect(
+    $credinals['mySQL']['host'],
+    $credinals['mySQL']['account']['user'],
+    $credinals['mySQL']['account']['password'],
     $debug ? $credinals['mySQL']['account']['database'] . "debug" : $credinals['mySQL']['account']['database'],
     $credinals['mySQL']['port']);
 if (!$connect) {
-    $response['error']['text'] = "Error on database server";
-    $response['error']['code'] = 0x01;
+    goError("Error on database server", 0x01);
 } else {
     $connect->query("SET NAMES 'utf8'");
     require "account.php";
@@ -26,14 +28,12 @@ if (!$connect) {
             $password = getRes('password');
             $user = getUser($login, $connect);
             if ($user == null) {
-                $response['error']['text'] = "Wrong username or email";
-                $response['error']['code'] = 0x05;
+                goError("Wrong username or email", 0x05);
             } else {
                 if (password_verify($password, $user['password'])) {
                     $response['response']['user_info'] = $user;
                 } else {
-                    $response['error']['text'] = "Wrong password";
-                    $response['error']['code'] = 0x04;
+                    goError("Wrong password", 0x04);
                 }
             }
             break;
@@ -63,49 +63,81 @@ if (!$connect) {
                         setAddress($user['email']);
                         sendMail(0);
                     } else {
-                        $response['error']['text'] = "Wrong user data";
-                        $response['error']['code'] = 0x06;
+                        goError("Wrong user data", 0x06);
                     }
                 } else {
-                    $response['error']['text'] = "This email is already registered";
-                    $response['error']['code'] = 0x07;
+                    goError("This email is already registered", 0x07);
                 }
             } else {
-                $response['error']['text'] = "The user is already registered";
-                $response['error']['code'] = 0x08;
+                goError("The user is already registered", 0x08);
             }
             break;
         }
-        case "getGroups": {
-            $token=getRes('token');
-            $name=getRes('name');
-            $city=getRes('city');
-            $building=getRes('building');
-            $confirmed=getRes('confirmed');
-            if(checkToken($connect, $token)) {
-                $groups=getListOfGroups($connect, $name, $city, $building, $confirmed);
-                $response['response']['group_list']=$groups;
+        case "getGroups":
+        {
+            $token = getRes('token');
+            $name = getRes('name');
+            $city = getRes('city');
+            $building = getRes('building');
+            $confirmed = getRes('confirmed');
+            if (checkToken($connect, $token)) {
+                $groups = getListOfGroups($connect, $name, $city, $building, $confirmed);
+                $response['response']['group_list'] = $groups;
             } else {
-                $response['error']['text'] = "Invalid token";
-                $response['error']['code'] = 0x09;
+                goError("Invalid token", 0x09);
             }
             break;
         }
-        case "joingroup":{
-            $token=getRes('token');
-            $groupId=getRes('groupid');
+        case "joinGroup":
+        {
+            $token = getRes('token');
+            $groupId = getRes('groupId');
+            $user = getUser($token, $connect);
+            if ($user == null) {
+                goError("Invalid token", 0x0A);
+            } else {
+                if ($user['groupId'] == -1 || $groupId == -1) {
+                    $groupList = getListOfGroups($connect, null, null, null, null);
+                    if ($groupId != -1) {
+                        $error = true;
+                        foreach ($groupList as $group) {
+                            if ($group['id'] == $groupId) $error = false;
+                        }
+                        if ($error) {
+                            goError("This group is not exist", 0x0C);
+                        } else {
+                            if (changeGroup($connect, $user['id'], $groupId) == true)
+                                $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                            else {
+                                goError("Error on database server", 0x0D);
+                            }
+                        }
+                    } else {
+                        if ($user['groupId'] == -1 && $groupId == -1) {
+                            goError("You have already left the group", 0x0E);
+                        } else {
+                            if (changeGroup($connect, $user['id'], $groupId) == true)
+                                $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                            else {
+                                goError("Error on database server", 0x0D);
+                            }
+                        }
+                    }
+                } else {
+                    goError("You already in group", 0x0B);
+                }
+            }
+            break;
         }
         case null:
         case "":
         {
-            $response['error']['text'] = "Specify an action";
-            $response['error']['code'] = 0x02;
+            goError("Specify an action", 0x02);
             break;
         }
         default:
         {
-            $response['error']['text'] = "Unknown action";
-            $response['error']['code'] = 0x03;
+            goError("Unknown action", 0x03);
             break;
         }
     }
@@ -120,7 +152,9 @@ function getRes($name)
         return $_GET[$name];
     } else return $_POST[$name];
 }
-function generateToken($length = 64) {
+
+function generateToken($length = 64)
+{
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
     $randomString = '';
@@ -128,4 +162,10 @@ function generateToken($length = 64) {
         $randomString .= $characters[rand(0, $charactersLength - 1)];
     }
     return $randomString;
+}
+
+function goError($message, $code) {
+    global $response;
+    $response['error']['text'] = $message;
+    $response['error']['code'] = $code;
 }
