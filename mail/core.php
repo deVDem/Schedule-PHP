@@ -8,7 +8,7 @@ $mail = new PHPMailer();
 function initMail()
 {
     try {
-        $credinals = json_decode(file_get_contents("./credinals.json"), true);
+        $credinals = json_decode(file_get_contents("D:\Sites\credinals.json"), true);
         global $mail;
         $mail->isSMTP();                   // Отправка через SMTP
         $mail->Host = $credinals['no-replyMail']['host'];  // Адрес SMTP сервера
@@ -42,7 +42,7 @@ function sendMail($id, $args)
         if (file_exists(dirname(__FILE__) . "/templates/$id/subject.txt") &&
             file_exists(dirname(__FILE__) . "/templates/$id/template.php")) {
             $subject = file_get_contents("templates/$id/subject.txt", FILE_USE_INCLUDE_PATH);
-            $debugstr = getDebug() ? "/debug" : "";
+            $debugstr = getDebug() ? "/debug" : "/debug"; // TODO : убрать!
             $msgHTML = file_get_contents("https://api.devdem.ru/apps/schedule".$debugstr."/mail/templates/$id/template.php?s=".json_encode($args));
             $mail->Subject = $subject;
             $mail->msgHTML($msgHTML);

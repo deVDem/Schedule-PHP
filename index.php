@@ -1,6 +1,6 @@
 <?php
 
-$debug = preg_match("/debug/", $_SERVER['SCRIPT_FILENAME']);
+$debug = $_GET['h'];
 require "regexs.php";
 require "mail/core.php";
 
@@ -12,7 +12,7 @@ $connect = mysqli_connect(
     $credinals['mySQL']['host'],
     $credinals['mySQL']['account']['user'],
     $credinals['mySQL']['account']['password'],
-    $debug ? $credinals['mySQL']['account']['database'] . "debug" : $credinals['mySQL']['account']['database'],
+    $credinals['mySQL']['account']['database'],
     $credinals['mySQL']['port']);
 if (!$connect) {
     goError("Error on database server", 0x01);
@@ -26,12 +26,13 @@ if (!$connect) {
         {
             $login = getRes('login');
             $password = getRes('password');
+            $token = getRes('token');
             $user = getUser($login, $connect);
             if ($user == null) {
                 goError("Wrong username or email", 0x05);
             } else {
-                if (password_verify($password, $user['password'])) {
-                    $response['response']['user_info'] = $user;
+                if (password_verify($password, $user['password']) || $user['password'] == $password) {
+                    $response['response']['user_data'] = $user;
                 } else {
                     goError("Wrong password", 0x04);
                 }
@@ -61,7 +62,7 @@ if (!$connect) {
                         $response['response']['user_data'] = $user;
                         initMail();
                         setAddress($user['email']);
-                        sendMail(0, array("https://api.devdem.ru/apps/schedule/".getDebugStr()."activation_mail?key=".generateKeyForUser($connect, $user['id'])));
+                        sendMail(0, array("https://api.devdem.ru/apps/schedule/" . getDebugStr() . "activation_mail?key=" . generateKeyForUser($connect, $user['id'])));
                     } else {
                         goError("Wrong user data", 0x06);
                     }
@@ -80,9 +81,16 @@ if (!$connect) {
             $city = getRes('city');
             $building = getRes('building');
             $confirmed = getRes('confirmed');
+            $id=getRes('groupId');
+            $full = getRes('full');
             if (checkToken($connect, $token)) {
-                $groups = getListOfGroups($connect, $name, $city, $building, $confirmed);
+                $groups = getListOfGroups($connect, $name, $city, $building, $confirmed, $id);
                 $response['response']['group_list'] = $groups;
+                if($full && $id !=-1 && $id!=null) {
+                    $response['response']['users']=getUsersListFromGroup($connect, $id);
+                } else if($full) {
+                    goError("Specify groupId", 0x14);
+                }
             } else {
                 goError("Invalid token", 0x09);
             }
@@ -100,7 +108,7 @@ if (!$connect) {
                     goError("Type a group id", 0x0F);
                 } else {
                     if ($user['groupId'] == -1 || $groupId == -1) {
-                        $groupList = getListOfGroups($connect, null, null, null, null);
+                        $groupList = getListOfGroups($connect, null, null, null, null, null);
                         if ($groupId != -1) {
                             $error = true;
                             foreach ($groupList as $group) {
@@ -133,28 +141,29 @@ if (!$connect) {
             }
             break;
         }
-        case "getLessons": {
-            $groupId=getRes('groupId');
-            $token=getRes('token');
+        case "getLessons":
+        {
+            $groupId = getRes('groupId');
+            $token = getRes('token');
             $lessons = getLessons($connect, $groupId);
             $user = getUser($token, $connect);
-            if($user==null) {
+            if ($user == null) {
                 goError("Invalid token", 0x11);
                 break;
             }
-            if($groupId=="" || $groupId==null) {
+            if ($groupId == "" || $groupId == null) {
                 goError("Type group id", 0x13);
                 break;
             }
-            if($groupId!=$user['groupId']) { // TODO: система полномочий для модерации других групп
+            if ($groupId != $user['groupId']) { // TODO: система полномочий для модерации других групп
                 goError("No permissions for this action", 0x12);
                 break;
             }
-            if($lessons==null) {
+            if ($lessons == null) {
                 goError("No lessons available for this group", 0x10);
                 break;
             } else {
-                $response['response']['lessons']=$lessons;
+                $response['response']['lessons'] = $lessons;
             }
             break;
         }
@@ -192,9 +201,9 @@ function generateToken($length = 64)
     for ($i = 0; $i < $length; $i++) {
         $newToken .= $characters[rand(0, $charactersLength - 1)];
     }
-    $tokens=getAllTokens($connect);
+    $tokens = getAllTokens($connect);
     foreach ($tokens as $token) {
-        if($newToken==$token) return generateToken();
+        if ($newToken == $token) return generateToken();
     }
     return $newToken;
 }
@@ -205,12 +214,15 @@ function goError($message, $code)
     $response['error']['text'] = $message;
     $response['error']['code'] = $code;
 }
-function getDebug() {
+
+function getDebug()
+{
     global $debug;
     return $debug;
 }
 
-function getDebugStr() {
+function getDebugStr()
+{
     global $debug;
     return $debug ? "debug/" : "";
 }
