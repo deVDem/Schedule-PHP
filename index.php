@@ -57,7 +57,7 @@ if (!$connect) {
                         && strlen($password) >= 6 && strlen($password) <= 32) {
                         $token = generateToken();
                         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                        registerUser($connect, $login, $email, $password_hash, $names, $spam==1 ? "Yes" : "No", $token);
+                        registerUser($connect, $login, $email, $password_hash, $names, $spam, $token);
                         $user = getUser($login, $connect);
                         $response['response']['user_data'] = $user;
                         initMail();
@@ -211,7 +211,6 @@ function generateToken($length = 64)
 function goError($message, $code)
 {
     global $response;
-    require '../codeToError.php';
     $response['error']['text'] = $message;
     $response['error']['code'] = $code;
 }
