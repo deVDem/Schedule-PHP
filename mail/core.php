@@ -10,13 +10,14 @@ function initMail()
     try {
         $credinals = json_decode(file_get_contents("D:\Sites\credinals.json"), true);
         global $mail;
-        $mail->isSMTP();                   // Отправка через SMTP
-        $mail->Host = $credinals['no-replyMail']['host'];  // Адрес SMTP сервера
-        $mail->SMTPAuth = true;          // Enable SMTP authentication
-        $mail->Username = $credinals['no-replyMail']['username'];       // ваше имя пользователя (без домена и @)
-        $mail->Password = $credinals['no-replyMail']['password'];    // ваш пароль
-        $mail->SMTPSecure = 'ssl';         // шифрование ssl
-        $mail->Port = 465;               // порт подключения
+        $mail->CharSet='UTF-8';
+        $mail->isSMTP();
+        $mail->Host = $credinals['no-replyMail']['host'];
+        $mail->SMTPAuth = true;
+        $mail->Username = $credinals['no-replyMail']['username'];
+        $mail->Password = $credinals['no-replyMail']['password'];
+        $mail->SMTPSecure = 'ssl';
+        $mail->Port = 465;
         $mail->setFrom($credinals['no-replyMail']['username'], $credinals['no-replyMail']['name']);
         return true;
     } catch (\PHPMailer\PHPMailer\Exception $e) {
@@ -48,7 +49,7 @@ function sendMail($id, $args)
             $mail->msgHTML($msgHTML);
             return $mail->send();
         } else {
-            return new Exception("Server error: No template found");
+            return new Exception("Server error: No template id $id found");
         }
     } catch (\PHPMailer\PHPMailer\Exception $e) {
         return $e;
