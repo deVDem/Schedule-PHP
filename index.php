@@ -31,7 +31,9 @@ if (!$connect) {
             if ($user == null) {
                 goError("Wrong username or email", 0x05);
             } else {
-                if (password_verify($password, $user['password']) || $user['password'] == $password) {
+                if (password_verify($password, $user['password']) || $user['token'] == $password) {
+                    $user['password']=null;
+                    $user['date_created']=null;
                     $response['response']['user_data'] = $user;
                 } else {
                     goError("Wrong password", 0x04);
@@ -59,6 +61,8 @@ if (!$connect) {
                         $password_hash = password_hash($password, PASSWORD_DEFAULT);
                         registerUser($connect, $login, $email, $password_hash, $names, $spam, $token);
                         $user = getUser($login, $connect);
+                        $user['password']=null;
+                        $user['date_created']=null;
                         $response['response']['user_data'] = $user;
                         initMail();
                         setAddress($user['email']);

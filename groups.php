@@ -14,7 +14,7 @@ function getListOfGroups($connect, $name, $city, $building, $confirmed, $id)
 function getUsersListFromGroup($connect, $groupId) {
     $users = array();
     $i=0;
-    $query=$connect->query("SELECT `login`, `names`, `pro` FROM `users` WHERE `groupId`=$groupId");
+    $query=$connect->query("SELECT `id`, `login`, `names`, `pro` FROM `users` WHERE `groupId`=$groupId");
     while ($user = $query->fetch_assoc()) {
         $users[$i]=$user;
         $i++;
