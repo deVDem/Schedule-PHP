@@ -25,7 +25,7 @@ function getUsersListFromGroup($connect, $groupId) {
 function getLessons($connect, $groupId) {
     $lessons = null;
     $i=0;
-    $query = $connect->query("SELECT * FROM `lessons` WHERE `groupOwner`=\"$groupId\"");
+    $query = $connect->query("SELECT * FROM `lessons` WHERE `groupOwner`=\"$groupId\" ORDER BY `lessons`.`day` ASC, `lessons`.`n` ASC");
     while ($row = $query->fetch_assoc()) {
         $lessons[$i]=$row;
         $i++;
