@@ -171,6 +171,25 @@ if (!$connect) {
             }
             break;
         }
+        case "getNotifications":{
+            $groupId=getRes('groupId');
+            $token=getRes('token');
+            $user=getUser($token, $connect);
+            if($user==null) {
+                goError("Invalid token", 0x14);
+                break;
+            }
+            if($groupId=="" || $groupId==null) {
+                goError("Type group id", 0x15);
+                break;
+            }
+            if($groupId != $user['groupId']) { // TODO: полномочия
+                goError("No permissions for this action", 0x16);
+                break;
+            }
+            $response['response']['notifications']=getNotifications($connect, $groupId);
+            break;
+        }
         case null:
         case "":
         {

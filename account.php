@@ -3,7 +3,7 @@
 function getUser($data, $connect)
 {
     $user = null;
-    $query = $connect->query("SELECT * FROM `users` WHERE `login`=\"$data\" OR `email`=\"$data\" OR `token`=\"$data\"");
+    $query = $connect->query("SELECT * FROM `users` WHERE `login`=\"$data\" OR `email`=\"$data\" OR `token`=\"$data\" OR `id`=\"$data\"");
     while ($row = $query->fetch_assoc()) {
         $user = $row;
     }

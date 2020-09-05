@@ -32,3 +32,24 @@ function getLessons($connect, $groupId) {
     }
     return $lessons;
 }
+
+
+function getNotifications($connect, $groupId) {
+    $notifications = null;
+    $i=0;
+    $query = $connect->query("SELECT * from `notifications` where `ownerId`=$groupId");
+    while ($notification = $query->fetch_assoc()) {
+        $notification['author']=getUser($notification['ownerId'], $connect);
+        $notification['author']['id']=null;
+        $notification['author']['email']=null;
+        $notification['author']['token']=null;
+        $notification['author']['password']=null;
+        $notification['author']['spam']=null;
+        $notification['author']['date_created']=null;
+        $notification['author']['confirmed']=null;
+        $notification['ownerId']=null;
+        $notifications[$i]=$notification;
+        $i++;
+    }
+    return $notifications;
+}
