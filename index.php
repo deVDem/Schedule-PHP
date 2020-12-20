@@ -20,7 +20,7 @@ if (!$connect) {
     $connect->query("SET NAMES 'utf8'");
     require "account.php";
     require "groups.php";
-
+    
     switch ($action) {
         case "login":
         {
@@ -122,7 +122,7 @@ if (!$connect) {
                                 goError("This group is not exist", 0x0C);
                             } else {
                                 if (changeGroup($connect, $user['id'], $groupId) == true)
-                                    $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                                    $response['response']['success'] = true;
                                 else {
                                     goError("Error on database server", 0x0D);
                                 }
@@ -132,7 +132,7 @@ if (!$connect) {
                                 goError("You have already left the group", 0x0E);
                             } else {
                                 if (changeGroup($connect, $user['id'], $groupId) == true)
-                                    $response['response']['success'] = changeGroup($connect, $user['id'], $groupId);
+                                    $response['response']['success'] = true;
                                 else {
                                     goError("Error on database server", 0x0D);
                                 }
