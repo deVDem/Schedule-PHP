@@ -42,9 +42,8 @@ function sendMail($id, $args)
         global $mail;
         if (file_exists(dirname(__FILE__) . "/templates/$id/subject.txt") &&
             file_exists(dirname(__FILE__) . "/templates/$id/template.php")) {
-            $subject = file_get_contents("templates/$id/subject.txt", FILE_USE_INCLUDE_PATH);
-            $debugstr = getDebug() ? "/debug" : "/debug"; // TODO : убрать!
-            $msgHTML = file_get_contents("https://api.devdem.ru/apps/schedule".$debugstr."/mail/templates/$id/template.php?s=".json_encode($args));
+            $subject = file_get_contents("https://api.devdem.ru/apps/schedule/debug/mail/templates/$id/subject.txt", FILE_USE_INCLUDE_PATH);
+            $msgHTML = file_get_contents("https://api.devdem.ru/apps/schedule/debug/mail/templates/$id/template.php?s=".json_encode($args));
             $mail->Subject = $subject;
             $mail->msgHTML($msgHTML);
             return $mail->send();

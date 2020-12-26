@@ -1,5 +1,4 @@
 <?php
-/** @noinspection PhpUndefinedMethodInspection */
 function getUser($data, $connect)
 {
     $user = null;
@@ -9,13 +8,14 @@ function getUser($data, $connect)
     }
     return $user;
 }
-function generateKeyForUser($connect, $userId) {
+function generateKeyForUser($connect, $userId, $tableName) {
     $newKey = generateToken(16);
-    $keys=getAllKeys($connect);
-    foreach ($keys as $key) {
-        if($newKey==$key) return generateKeyForUser($connect, $userId);
-    }
-    $connect->query("INSERT INTO `mail_activation`(`keyMail`, `userId`) VALUES (\"$newKey\", $userId)");
+    $keys=getAllKeys($connect, $tableName);
+    if($keys!=null)
+        foreach ($keys as $key) {
+            if($newKey==$key) return generateKeyForUser($connect, $userId, $tableName);
+        }
+    $connect->query("INSERT INTO `".$tableName."`(`keyMail`, `userId`) VALUES (\"$newKey\", $userId)");
     return $newKey;
 }
 
@@ -47,10 +47,10 @@ function getAllTokens($connect) {
     return $tokens;
 }
 
-function getAllKeys($connect) {
+function getAllKeys($connect, $tableName) {
     $keys = null;
     $i=0;
-    $query = $connect->query("SELECT `keyMail` from `mail_activation`");
+    $query = $connect->query("SELECT `keyMail` from `".$tableName."`");
     while ($row=$query->fetch_assoc()) {
         $keys[$i] = $row['keyMail'];
         $i++;

@@ -66,7 +66,7 @@ if (!$connect) {
                         $response['response']['user_data'] = $user;
                         initMail();
                         setAddress($user['email']);
-                        sendMail(0, array("https://api.devdem.ru/apps/schedule/" . getDebugStr() . "activation_mail?key=" . generateKeyForUser($connect, $user['id'])));
+                        sendMail(0, array("https://api.devdem.ru/apps/schedule/" . getDebugStr() . "activation_mail?key=" . generateKeyForUser($connect, $user['id'], "mail_activation")));
                     } else {
                         goError("Wrong user data", 0x06);
                     }
@@ -188,6 +188,19 @@ if (!$connect) {
                 break;
             }
             $response['response']['notifications']=getNotifications($connect, $groupId);
+            break;
+        }
+        case "restorePass": {
+            $email=getRes('email');
+            $user=getUser($email, $connect);
+            if($user==null) {
+                goError("No user found", 0x53);
+                break;
+            }
+            initMail();
+            setAddress($user['email']);
+            sendMail(1, array("https://api.devdem.ru/apps/schedule/restore?key=" . generateKeyForUser($connect, $user['id'], "restore_keys")));
+            $response['response']['success'] = true;
             break;
         }
         case null:
