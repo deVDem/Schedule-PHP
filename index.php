@@ -20,6 +20,7 @@ if (!$connect) {
     $connect->query("SET NAMES 'utf8'");
     require "account.php";
     require "groups.php";
+    require "images.php";
     
     switch ($action) {
         case "login":
@@ -201,6 +202,35 @@ if (!$connect) {
             setAddress($user['email']);
             sendMail(1, array("https://api.devdem.ru/apps/schedule/restore?key=" . generateKeyForUser($connect, $user['id'], "restore_keys")));
             $response['response']['success'] = true;
+            break;
+        }
+        case "getImage": {
+            $imageId=getRes('imageId');
+            if($imageId==null) {
+                goError('imageId not found', 0x49);
+                break;
+            }
+            $token=getRes('token');
+            $user=getUser($token, $connect);
+            if($user==null) {
+                goError("User not found", 0x57);
+                break;
+            }
+            $image=getImageFromId($connect, $imageId);
+            if($image==null) {
+                goError("Image not found", 0x47);
+                break;
+            }
+            if($image['access']=='All') {
+                $response['response']['image']=base64_encode(file_get_contents($image['path']));
+            } else {
+                $owner=getUser($image['ownerId'], $connect);
+                if($user==null) {
+                    $response['response']['image']=base64_encode(file_get_contents($image['path']));
+                } else if ($user['groupId']==$owner['groupId']) {
+                    $response['response']['image']=base64_encode(file_get_contents($image['path']));
+                } else goError("Access denied", 0x48);
+            }
             break;
         }
         case null:
