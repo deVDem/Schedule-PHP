@@ -41,7 +41,7 @@ function getNotifications($connect, $groupId) {
     while ($notification = $query->fetch_assoc()) {
         if($notification['ownerId'] != -1) 
         {
-            $notification['author']=getUser($notification['ownerId'], $connect);
+            $notification['author']=getUserById($notification['ownerId'], $connect);
             $notification['author']['id']=null;
             $notification['author']['email']=null;
             $notification['author']['token']=null;

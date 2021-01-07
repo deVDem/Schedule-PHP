@@ -2,7 +2,15 @@
 function getUser($data, $connect)
 {
     $user = null;
-    $query = $connect->query("SELECT * FROM `users` WHERE `login`=\"$data\" OR `email`=\"$data\" OR `token`=\"$data\" OR `id`=\"$data\"");
+    $query = $connect->query("SELECT * FROM `users` WHERE `login`=\"$data\" OR `email`=\"$data\" OR `token`=\"$data\"");
+    while ($row = $query->fetch_assoc()) {
+        $user = $row;
+    }
+    return $user;
+}
+function getUserById($id, $connect) {
+    $user = null;
+    $query = $connect->query("SELECT * FROM `users` WHERE `id`=\"$id\"");
     while ($row = $query->fetch_assoc()) {
         $user = $row;
     }

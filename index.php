@@ -75,7 +75,7 @@ if (!$connect) {
                     goError("This email is already registered", 0x07);
                 }
             } else {
-                goError("The user is already registered", 0x08);
+                goError("The user is already registered: ", 0x08);
             }
             break;
         }
@@ -224,7 +224,7 @@ if (!$connect) {
             if($image['access']=='All') {
                 $response['response']['image']=base64_encode(file_get_contents($image['path']));
             } else {
-                $owner=getUser($image['ownerId'], $connect);
+                $owner=getUserById($image['ownerId'], $connect);
                 if($user==null) {
                     $response['response']['image']=base64_encode(file_get_contents($image['path']));
                 } else if ($user['groupId']==$owner['groupId']) {
